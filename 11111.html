@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>女鞋商品卡盈亏计算器</title>
+<style>
+:root{--bg:#f3f5f9;--card:#fff;--ink:#172033;--muted:#667085;--line:#e5e7eb;--accent:#2563eb;--green:#07845a;--red:#c62828}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:760px;margin:auto;padding:18px 14px 32px}.head{padding:8px 2px 14px}.head h1{font-size:24px;margin:0 0 7px}.head p{font-size:13px;line-height:1.55;color:var(--muted);margin:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 3px 12px #10182808}
+h2{font-size:16px;margin:0 0 13px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:block;font-size:13px;color:#475467;margin-bottom:6px}.field input{width:100%;border:1px solid #d0d5dd;border-radius:10px;padding:12px 10px;font-size:16px;background:#fff;color:var(--ink);min-width:0}
+.field small{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+button{border:0;border-radius:11px;padding:12px 14px;font-size:15px;font-weight:650;cursor:pointer}
+.primary{background:var(--accent);color:#fff;width:100%;margin-top:13px}.secondary{background:#eef2ff;color:#243b83}
+.resultTop{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{background:#f8fafc;border-radius:12px;padding:13px}.metric .k{font-size:12px;color:var(--muted);margin-bottom:7px}.metric .v{font-size:22px;font-weight:750;overflow-wrap:anywhere}.positive{color:var(--green)}.negative{color:var(--red)}
+.rows{margin-top:13px}.row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #eef0f4;font-size:13px}.row:last-child{border-bottom:0}.row span:first-child{color:var(--muted)}.row strong{text-align:right}
+.badge{display:inline-block;padding:5px 9px;border-radius:99px;background:#fef3c7;color:#92400e;font-size:12px;margin-top:10px}.badge.good{background:#dcfce7;color:#166534}.badge.bad{background:#fee2e2;color:#991b1b}
+.tableWrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}th,td{text-align:right;padding:10px 8px;border-bottom:1px solid var(--line)}th:first-child,td:first-child{text-align:left}th{color:var(--muted);font-weight:600;background:#f8fafc}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.note{font-size:12px;color:var(--muted);line-height:1.65}.foot{font-size:11px;color:#98a2b3;text-align:center;margin-top:18px}
+@media(max-width:420px){.wrap{padding:12px 10px 24px}.card{padding:13px}.grid{gap:9px}.field input{padding:11px 8px}.metric .v{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="head">
+    <h1>女鞋商品卡盈亏计算器</h1>
+    <p>按 100 个付费订单测算。退货鞋可换回、不计商品损失；发出的每单仍计运费、运费险和杂费；平台佣金只按最终成交订单计算。</p>
+  </header>
+
+  <section class="card">
+    <h2>① 商品与投放条件</h2>
+    <div class="grid">
+      <div class="field"><label for="cost">单双拿货成本（元）</label><input id="cost" type="number" min="0" step="0.01" value="0"></div>
+      <div class="field"><label for="price">单双售价（元）</label><input id="price" type="number" min="0" step="0.01" value="0"></div>
+      <div class="field"><label for="returns">退货率（%）</label><input id="returns" type="number" min="0" max="100" step="1" value="0"></div>
+      <div class="field"><label for="roi">投放 ROI</label><input id="roi" type="number" min="0.01" step="0.1" value="0"></div>
+      <div class="field"><label for="orders">付费下单量（单）</label><input id="orders" type="number" min="1" step="1" value="0"></div>
+      <div class="field"><label for="commission">平台佣金率（%）</label><input id="commission" type="number" min="0" max="100" step="0.1" value="0"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>② 每单额外成本（按实际发货单数计算）</h2>
+    <div class="grid">
+      <div class="field"><label for="shipping">快递费（元/单）</label><input id="shipping" type="number" min="0" step="0.01" value="0"></div>
+      <div class="field"><label for="insurance">运费险（元/单）</label><input id="insurance" type="number" min="0" step="0.01" value="0"></div>
+      <div class="field"><label for="misc">包装/杂费（元/单）</label><input id="misc" type="number" min="0" step="0.01" value="0"></div>
+    </div>
+    <button class="primary" id="calc">计算盈亏</button>
+  </section>
+
+  <section class="card" id="result">
+    <h2>③ 计算结果</h2>
+    <div class="resultTop">
+      <div class="metric"><div class="k">预计净利润</div><div class="v" id="profit">—</div></div>
+      <div class="metric"><div class="k">保本 ROI</div><div class="v" id="breakeven">—</div></div>
+      <div class="metric"><div class="k">预计最终成交单</div><div class="v" id="retained">—</div></div>
+      <div class="metric"><div class="k">预计广告费</div><div class="v" id="adspend">—</div></div>
+    </div>
+    <div id="status" class="badge">等待计算</div>
+    <div class="rows" id="breakdown"></div>
+  </section>
+
+  <section class="card">
+    <h2>④ 不同 ROI 下的利润对比</h2>
+    <div class="tableWrap"><table><thead><tr><th>ROI</th><th>广告费</th><th>净利润</th><th>盈亏</th></tr></thead><tbody id="roiTable"></tbody></table></div>
+  </section>
+
+  <section class="card">
+    <h2>⑤ 导出与说明</h2>
+    <div class="actions">
+      <button class="secondary" id="export">导出计算结果 CSV</button>
+      <button class="secondary" id="reset">恢复默认值</button>
+    </div>
+    <p class="note">计算口径：最终成交单 = 下单量 ×（1 − 退货率）；商品成本只按最终成交单计算；快递费、运费险、包装/杂费按下单量计算；佣金按最终成交销售额计算；广告费 = 下单量 × 售价 ÷ ROI。保本 ROI = 下单销售额 ÷ 广告费前利润（仅当广告费前利润大于 0 时有意义）。</p>
+  </section>
+  <div class="foot">本工具为估算模型，实际利润请以平台结算、实际退款与账单为准。</div>
+</div>
+<script>
+const ids=['cost','price','returns','roi','orders','commission','shipping','insurance','misc'];
+let last={};
+const $=id=>document.getElementById(id);
+const num=id=>Number($(id).value||0);
+const money=n=>(Number.isFinite(n)?n:0).toLocaleString('zh-CN',{style:'currency',currency:'CNY',minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt=n=>Number.isFinite(n)?n.toFixed(2):'—';
+function calc(){
+ let c=num('cost'),p=num('price'),r=Math.min(100,Math.max(0,num('returns')))/100,roi=num('roi'),n=Math.max(0,Math.floor(num('orders'))),cr=Math.min(100,Math.max(0,num('commission')))/100,s=num('shipping'),ins=num('insurance'),m=num('misc');
+ let kept=n*(1-r),sales=kept*p,product=kept*c,ship=n*s,insurance=n*ins,misc=n*m,commission=sales*cr;
+ let preAd=sales-product-ship-insurance-misc-commission;
+ let ad=roi>0?n*p/roi:0,profit=preAd-ad;
+ let be=preAd>0?n*p/preAd:Infinity;
+ last={下单量:n,拿货成本:c,售价:p,退货率百分比:r*100,ROI:roi,预计最终成交单:kept,预计销售额:sales,商品成本:product,快递费:ship,运费险:insurance,包装杂费:misc,平台佣金:commission,广告前利润:preAd,广告费:ad,净利润:profit,保本ROI:be};
+ $('profit').textContent=money(profit);$('profit').className='v '+(profit>=0?'positive':'negative');
+ $('breakeven').textContent=Number.isFinite(be)?fmt(be):'无法保本';
+ $('retained').textContent=fmt(kept)+' 单';$('adspend').textContent=money(ad);
+ let st=$('status');st.className='badge '+(profit>0?'good':profit<0?'bad':'');st.textContent=profit>0?'按当前条件预计盈利':profit<0?'按当前条件预计亏损':'按当前条件预计保本';
+ const rows=[
+ ['预计下单销售额（下单量×售价）',n*p],['预计最终成交销售额',sales],['商品成本（只计最终成交）',-product],['快递费（按下单量）',-ship],['运费险（按下单量）',-insurance],['包装/杂费（按下单量）',-misc],['平台佣金（最终成交销售额×佣金率）',-commission],['广告前利润',preAd],['广告费（下单量×售价÷ROI；ROI为0时暂按0显示）',-ad],['最终净利润',profit]
+ ];
+ $('breakdown').innerHTML=rows.map(([k,v])=>`<div class="row"><span>${k}</span><strong class="${v<0?'negative':v>0?'positive':''}">${money(v)}</strong></div>`).join('');
+ let rois=[2,3,3.5,4,4.5,5,6,8,10,12,15];
+ $('roiTable').innerHTML=rois.map(x=>{let a=n*p/x,pr=preAd-a;return `<tr><td>${x.toFixed(x%1?1:0)}</td><td>${money(a)}</td><td class="${pr>=0?'positive':'negative'}">${money(pr)}</td><td>${pr>=0?'盈利':'亏损'}</td></tr>`}).join('');
+}
+$('calc').addEventListener('click',calc);
+ids.forEach(id=>$(id).addEventListener('input',calc));
+$('reset').addEventListener('click',()=>{let d={cost:50,price:133,returns:50,roi:4,orders:100,commission:5,shipping:3,insurance:4,misc:0.3};Object.entries(d).forEach(([k,v])=>$(k).value=v);calc();});
+$('export').addEventListener('click',()=>{calc();let rows=[['项目','数值'],...Object.entries(last)];let csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');let blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='女鞋商品卡盈亏计算结果.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(a.href);});
+calc();
+</script>
+</body>
+</html>
